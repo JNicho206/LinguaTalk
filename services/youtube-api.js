@@ -2,29 +2,39 @@ const dotenv = require("dotenv").config();
 const axios = require('axios');
 
 
-const api_key = process.env["YOUTUBE-API-KEY"];
+const API_KEY = process.env["YOUTUBE-API-KEY"];
 
-let data = '';
 
-let config = {
-  method: 'get',
-  maxBodyLength: Infinity,
-  url: 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=spanish&maxResults=25&key=AIzaSyBoJNf05Ek50vzdCtckhRu5nPGmzoJu-TY',
-  headers: { 
-    'key': api_key
-  },
-  data: data,
-  params: {
-    part: "snippet",
-    q: "How to spanish",
-    maxResults: 25
+async function search(query, maxResults = 10, api_key = API_KEY)
+{
+  let data = '';
+  const endpoint = 'https://www.googleapis.com/youtube/v3/search?part=snippet';
+
+  let config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: endpoint,
+    headers: { 
+      key: api_key
+    },
+    data: data,
+    params: {
+      part: "snippet",
+      q: query,
+      maxResults: maxResults
+    }
+  };
+
+  try
+  {
+    let result = await axios.request(config);
+    return result.data;
+  } catch (error)
+  {
+    console.error("Error hitting YouTube API search endpoint.", error);
+    throw error;
   }
-};
+ 
+}
 
-axios.request(config)
-.then((response) => {
-  console.log(JSON.stringify(response.data));
-})
-.catch((error) => {
-  console.log(error);
-});
+module.exports = {search};
