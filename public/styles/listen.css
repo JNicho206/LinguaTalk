@@ -1,0 +1,36 @@
+.lw { font-size: 60px; }
+
+.listen-container 
+{
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(220, 156, 28);
+    height: 100%;
+    width: 100%;
+}
+
+.container-header-div
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    height: 10%;
+    width: 100%;
+    background-color: teal;
+}
+
+.media-container 
+{
+    display: flex;
+    height: 100%;
+    width: 100%;
+    background-color:bisque;
+    padding: 20px;
+
+}
+
+.youtube-frame 
+{
+    width: 100%;
+}
