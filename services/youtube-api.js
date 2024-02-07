@@ -5,6 +5,32 @@ const axios = require('axios');
 const API_KEY = process.env["YOUTUBE-API-KEY"];
 
 
+
+class SearchResult
+{
+  constructor(data)
+  {
+    this.videos = [];
+
+    for (item in data.items)
+    {
+      if (itemIsVideo(item))
+      {
+        this.videos.push(item);
+      }
+    }
+  }
+
+  getVideoIds()
+  {
+    let ids = [];
+    for (v in this.videos)
+    {
+      ids.push(v.id.videoId);
+    }
+  }
+}
+
 async function search(query, maxResults = 10, api_key = API_KEY)
 {
   let data = '';
@@ -28,13 +54,18 @@ async function search(query, maxResults = 10, api_key = API_KEY)
   try
   {
     let result = await axios.request(config);
-    return result.data;
+    return new SearchResult(result.data);
   } catch (error)
   {
     console.error("Error hitting YouTube API search endpoint.", error);
     throw error;
   }
  
+}
+
+function itemIsVideo(item)
+{
+  return item.id.kind == "youtube#video";
 }
 
 module.exports = {search};
