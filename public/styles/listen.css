@@ -1,6 +1,6 @@
 .lw { font-size: 60px; }
 
-.listen-container 
+#listen-div 
 {
     display: flex;
     flex-direction: column;
@@ -9,7 +9,7 @@
     width: 100%;
 }
 
-.container-header-div
+#listen-header-div
 {
     display: flex;
     align-items: center;
@@ -20,17 +20,51 @@
     background-color: teal;
 }
 
-.media-container 
+#listen-body-div
 {
-    display: flex;
     height: 100%;
     width: 100%;
+}
+
+#listen-media-div
+{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 70%;
     background-color:bisque;
     padding: 20px;
 
 }
 
+#listen-body-sidebar-div
+{
+    height: 100%;
+    width: 100%;
+}
+
+
 .youtube-frame 
 {
     width: 100%;
+}
+
+#transcript-div
+{
+    display: "none";
+}
+
+#video-list-div
+{
+     
+}
+
+#video-list-header
+{
+
+}
+
+#video-list
+{
+    
 }
