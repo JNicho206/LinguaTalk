@@ -1,0 +1,161 @@
+.lw { font-size: 60px; }
+
+#listen-div 
+{
+    margin: 100px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(220, 156, 28);
+    height: 800px;
+    width: auto;
+}
+
+#listen-header-div
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 15%;
+    width: 100%;
+    background-color: teal;
+}
+
+#listen-body-div
+{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+#listen-body-top
+{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 85%;
+    background-color: black;
+}
+
+#listen-body-bottom
+{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 15%;
+}
+
+#listen-media-div
+{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 80%;
+    background-color:bisque;
+}
+
+#listen-body-sidebar-div
+{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 20%;
+    background-color: white;
+    border-bottom: 1px solid black;
+    border-left: 1px solid black;
+}
+
+#vocab-div
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    gap: 25px;
+}
+
+#vocab-term-input
+{
+    font-size: medium;
+    height: 25px;
+    width: 300px;
+}
+
+#vocab-familiarity-select
+{
+    height: 25px;
+    width: 125px
+}
+
+.youtube-frame 
+{
+    width: 100%;
+    height: 100%;
+}
+
+#transcript-div
+{
+    display: "hidden";
+}
+
+#video-list-div
+{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+#video-list-header
+{
+    background-color: dimgray;
+    width: 100%;
+    height: 10%;
+}
+
+#video-list-body
+{   
+    height: 100%;
+    width: 100%;
+    background-color:bisque;
+    overflow-y: auto;
+}
+
+.video-li
+{
+    height: 30px;
+    width: 100%;
+}
+
+.video-entry
+{
+    display: flex;
+    flex-direction: row;
+    height: 20%;
+    width: 100%;
+    border-top: 3px solid black;
+}
+
+.video-entry-info
+{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    padding: 5px;
+
+}
+
+.video-entry-thumbnail
+{
+    height: 100%;
+    width: 40%
+}
+
+.video-entry-title
+{
+    border-bottom: 1px dotted black;
+    margin-bottom: 0;
+}
