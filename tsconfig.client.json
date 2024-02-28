@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
       "target": "es5",
-      "module": "es2015",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
       "outDir": "./public/scripts",
       "rootDir": "./client/scripts",
       "strict": true,

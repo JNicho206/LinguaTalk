@@ -1,26 +1,16 @@
-const submit = document.getElementById("register-submit");
-const username = document.getElementById("username-div").getElementsByTagName("input")[0];
-const pwd = document.getElementById("password-div").getElementsByTagName("input")[0];
-const confirm_pwd = document.getElementById("password-div").getElementsByTagName("input")[0];
-
-function isValidUsername(username)
-{
-    if (username)
+"use strict";
+var _a, _b, _c;
+Object.defineProperty(exports, "__esModule", { value: true });
+var submit = document.getElementById("register-submit");
+var username = (_a = document.getElementById("username-div")) === null || _a === void 0 ? void 0 : _a.getElementsByTagName("input")[0];
+var pwd = (_b = document.getElementById("password-div")) === null || _b === void 0 ? void 0 : _b.getElementsByTagName("input")[0];
+var confirm_pwd = (_c = document.getElementById("password-div")) === null || _c === void 0 ? void 0 : _c.getElementsByTagName("input")[0];
+function isValidUsername(username) {
 }
-
-function isValidPassword(pwd)
-{
-    
+function isValidPassword(pwd) {
 }
-
-function passwordsMatch(pwd, confirm_pwd)
-{
-
+function passwordsMatch(pwd, confirm_pwd) {
 }
-
-
-function registerSubmit()
-{
-
+function registerSubmit() {
 }
-submit.addEventListener("click", registerSubmit());
+//submit.addEventListener("click", registerSubmit());
