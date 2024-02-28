@@ -1,19 +1,76 @@
+const dotenv = require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const youtube = require("./services/youtube-api");
 const db = require("./services/db");
 const { DynamoDB } = require("@aws-sdk/client-dynamodb");
+const session = require("express-session");
 const app = express();
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json())
+// Globals
+const SESSION_SECRET = process.env["SESSION-SECRET"];
 
+// Services
 const dynamo = new db.MyDynamoClient();
-// Home page route
+const sql = new db.MySQLDB()
+
+//Middleware
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+app.use(session(
+    {
+        secret: SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          secure: true, // for HTTPS
+          httpOnly: true,
+          maxAge: 60 * 60 * 1000, // 1 hours
+          sameSite: 'lax'
+        },
+        name: 'sessionId'
+    }
+))
+
+
+// Endpoints
+
+// Serve home page
+// TODO protect by sending to login if not authenticated
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'views', 'index.html'));
 });
 
+// Serve login page
+app.get('/login', (req, res) =>
+{
+    // If not authenticated
+    // serve login
+    res.sendFile(path.join(__dirname, 'public', 'views', 'index.html'));
+
+    // else
+    // redirect to home
+});
+
+// login endpoint
+app.post('/api/login', (req, res) =>
+{
+
+});
+app.post('/api/sql-create', async (req, res) =>
+{
+    const name = req.body.table;
+    //const result = await sql.query(`CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL)`);
+    const result = await sql.query("SHOW TABLES;");
+    console.log(result);
+});
+
+app.get('/api/sql-list', (req, res) =>
+{
+
+});
+
+// Save vocab term endpoint
 app.post("/api/save-vocab", async (req, res) =>
 {
     const term = req.body.term;
