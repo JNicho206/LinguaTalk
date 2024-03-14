@@ -10,6 +10,14 @@ export enum ValidateResult
     INV_MISMATCH = "Passwords do not match."
 }
 
+export enum LoginResult
+{
+    SUCCESS = "Login Successful.",
+    UNREGISTERED = "User name is not registered.",
+    BAD_PASSWORD = "Incorrect password.",
+    BLANK_USER = "User name must not be blank.",
+    BLANK_PASSWORD = "Password must not be blank."
+}
 
 export function validateInfo(name: string, pwd: string, confirm_pwd: string) : ValidateResult
 {
