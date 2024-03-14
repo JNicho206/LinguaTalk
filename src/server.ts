@@ -58,8 +58,27 @@ app.get('/login', (req: Request, res: Response) =>
 });
 
 // login endpoint
-app.post('/api/login', (req: Request, res: Response) =>
+app.post('/api/login', async (req: Request, res: Response) =>
 {
+    const body = req.body;
+    const name = body.username;
+    const password = body.password;
+    // Check for blank user and passwords
+
+    // Authenticate user
+    const authed = await sql.authenticateUser(name, password);
+    if (authed == null)
+    {
+        // Error
+    }
+    else if (authed == false)
+    {
+        // User DNE
+    }
+
+    session.userid = 1;
+    session.authenticated = true;
+    res.status(200).send("Login Successful.");
 
 });
 
@@ -85,34 +104,41 @@ app.post('/api/register-user', express.json(), async (req: Request, res: Respons
         return;
     }
 
-    // Check if user exists
+    // Username may already be registered
+    if (sql.userExists(username))
+    {
+        console.log(username, "Already exists.");
+        res.status(500).send("Username already exists.");
+        return;
+    }
 
-    // if (sql.userExists(username))
-    // {
-    //     console.log(username, "Already exists.");
-    //     res.status(500).send("Username already exists.");
-    //     return;
-    // }
-
-    // const table = await sql.query("SHOW TABLES");
-    // console.log(table);
-
-    // Create user
     const created = await sql.createUser(username, password);
     if (!created)
     {
-
         res.status(501).send("Server error creating user.");
         return;
     }
     console.log("User List:", await sql.listUsers());
+
+    session.authenticated = true;
+    session.userid = 1;
     res.status(201).send("User created.");
     //res.status(200).send("Success");
 });
 
-app.get('/api/sql-list', (req: Request, res: Response) =>
+app.post("/api/translate", async (req: Request, res: Response) =>
 {
-
+    const data = req.body.data;
+    try
+    {
+        const translated = await translator.translate(data);
+        res.status(200).send(translated);
+    }
+    catch (err)
+    {
+        console.error("Error translating data:", err);
+        res.status(500).send("Server error.");
+    }
 });
 
 // Save vocab term endpoint
