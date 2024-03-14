@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 // Write JavaScript here
 var vid_list = document.getElementById("video-list-body");
 var yt_embed_path = "https://www.youtube.com/embed/";

@@ -1,5 +1,6 @@
 const mysql = require("mysql");
 const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+const bcrypt = require("bcrypt");
 
 const MYSQL_HOST = process.env["MYSQL-HOST"];
 const MYSQL_PWD = process.env["MYSQL-PWD"];
@@ -12,18 +13,27 @@ const AWS_SECRET_KEY = process.env["AWS-SERVICE-SECRET-KEY"];
 
 class MySQLDB
 {
+    pool: any;
     constructor()
     {
-        // this.pool = mysql.createPool({
-        //     host: _host, 
-        //     user: _user,
-        //     password: _pwd,
-        //     database: db,
+        this.pool = mysql.createPool({
+            host: MYSQL_HOST, 
+            user: MYSQL_USER,
+            password: MYSQL_PWD,
+            database: "main",
+            port: 3306,
+            connectionLimit: 10
+        });
+        // this.connection = mysql.createConnection({
+        //     host: MYSQL_HOST, 
+        //     user: MYSQL_USER,
+        //     password: MYSQL_PWD,
+        //     database: "main",
         //     port: 3306,
         // });
     }
 
-    async query(q: string)
+    query(q: string) : Promise<any>
     {
         // try
         // {
@@ -35,45 +45,62 @@ class MySQLDB
         // catch (err)
         // {
         //     console.error(err);
-        // }
-        try
+        // }  
+        return new Promise((resolve, reject) =>
         {
-            const connection = mysql.createConnection({
-                host: MYSQL_HOST, 
-                user: MYSQL_USER,
-                password: MYSQL_PWD,
-                database: "users",
-                port: 3306,
-            });
-            connection.connect(function(err: Error) {
+            this.pool.getConnection(async (err: Error, connection: any) => {
                 if (err) {
-                  console.error('Database connection failed: ' + err.stack);
-                  return;
+                    console.error('Database connection failed: ' + err.stack);
+                    reject(new Error("Error connecting to the database."));
+                    return;
                 }
-                console.log("Connection made!")
+                console.log("Connection made!");
                 connection.query(q, (err: Error, results: any) =>
                 {
                     if (err)
                     {
                         console.error("Query Error: ", err.stack);
-                        connection.destroy();
+                        connection.release();
+                        reject (new Error("Error making query"));
                         return;
                     }
-                    console.log(results);
-                    connection.destroy();
+                    connection.release();
                     console.log("Connection destroyed");
+                    resolve(results);
+                    return;
                 });
-            }
-            );
-            //console.log(res);
+            });
+        });
+    }
+    
+    async createUser(name: string, password: string)
+    {
+        
+        try
+        {
+            const hash = await bcrypt.hash(password, 10);
+            const q_response = await this.query(`INSERT INTO users (username, password) VALUES ('${name}', '${hash}')`);
         }
         catch (err)
         {
-            console.log(err);
+            console.error("Error creating user.", err);
+            return false;
         }
+        return true;
     }
 
+    async userExists(name: string)
+    {
+        return false;
+    }
+
+    async listUsers()
+    {
+        return await this.query("SELECT * FROM users");
+    }
 }
+
+
 
 class MyDynamoClient
 {

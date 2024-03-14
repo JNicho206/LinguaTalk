@@ -11,9 +11,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = require("dotenv").config();
 const express = require("express");
+const user_1 = require("./services/user");
 const path = require("path");
 const youtube = require("./services/youtube-api");
 const db = require("./services/db");
+const user = require("./services/user");
+const deepl = require("./services/deepl");
 const { DynamoDB } = require("@aws-sdk/client-dynamodb");
 const session = require("express-session");
 const app = express();
@@ -22,8 +25,9 @@ const SESSION_SECRET = process.env["SESSION-SECRET"];
 // Services
 const dynamo = new db.MyDynamoClient();
 const sql = new db.MySQLDB();
+const translator = new deepl.DLTranslator("es");
 //Middleware
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 app.use(session({
     secret: SESSION_SECRET,
@@ -41,13 +45,13 @@ app.use(session({
 // Serve home page
 // TODO protect by sending to login if not authenticated
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'views', 'index.html'));
+    res.sendFile(path.join(__dirname, '../public', 'views', 'index.html'));
 });
 // Serve login page
 app.get('/login', (req, res) => {
     // If not authenticated
     // serve login
-    res.sendFile(path.join(__dirname, 'public', 'views', 'index.html'));
+    res.sendFile(path.join(__dirname, '../public', 'views', 'index.html'));
     // else
     // redirect to home
 });
@@ -56,13 +60,39 @@ app.post('/api/login', (req, res) => {
 });
 // Serve register page
 app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'views', 'register.html'));
+    res.sendFile(path.join(__dirname, '../public', 'views', 'register.html'));
 });
-app.post('/api/sql-create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const name = req.body.table;
-    //const result = await sql.query(`CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL)`);
-    const result = yield sql.query("SHOW TABLES;");
-    console.log(result);
+app.post('/api/register-user', express.json(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    //TODO Refactor using User object and single function
+    const data = req.body;
+    const username = data.username;
+    const password = data.password;
+    const confirm_password = data.confirm_password;
+    // Validate info
+    const validationResult = user.validateInfo(username, password, confirm_password);
+    if (validationResult !== user_1.ValidateResult.VALID) {
+        console.log("User info invalid.");
+        res.status(500).send(validationResult);
+        return;
+    }
+    // Check if user exists
+    // if (sql.userExists(username))
+    // {
+    //     console.log(username, "Already exists.");
+    //     res.status(500).send("Username already exists.");
+    //     return;
+    // }
+    // const table = await sql.query("SHOW TABLES");
+    // console.log(table);
+    // Create user
+    const created = yield sql.createUser(username, password);
+    if (!created) {
+        res.status(501).send("Server error creating user.");
+        return;
+    }
+    console.log("User List:", yield sql.listUsers());
+    res.status(201).send("User created.");
+    //res.status(200).send("Success");
 }));
 app.get('/api/sql-list', (req, res) => {
 });

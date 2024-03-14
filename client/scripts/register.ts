@@ -1,26 +1,22 @@
 const submit = document.getElementById("register-submit") as HTMLButtonElement;
 const usernameInput: HTMLInputElement | undefined = document.getElementById("username-div")?.getElementsByTagName("input")[0];
 const pwdInput: HTMLInputElement | undefined = document.getElementById("password-div")?.getElementsByTagName("input")[0];
-const confirm_pwdInput: HTMLInputElement | undefined = document.getElementById("password-div")?.getElementsByTagName("input")[0];
+const confirm_pwdInput: HTMLInputElement | undefined = document.getElementById("confirm-password-div")?.getElementsByTagName("input")[0];
 
-function isValidUsername(username: string) : boolean
+const PWD_REGEX: RegExp = /^[A-Za-z0-9!@#$%&]{6,20}$/;
+const USER_REGEX: RegExp = /^[A-Za-z0-9]{4,10}$/;
+
+enum ValidateResult
 {
-    if (!(username.length > 3 && username.length < 11)) throw new Error("Username length invalid.");
-    return true;
-}
-function isValidPassword(pwd: string) : boolean
-{
-    if (pwd.length < 4) throw new Error("Password length invalid.");
+    VALID = "User info is valid.",
+    INV_USER = "Username is invalid.",
+    INV_PWD = "Password is invalid.",
+    INV_MISMATCH = "Passwords do not match.",
+    INV_FORM = "Unable to extract form data"
+};
 
-    return true;
-}
 
-function passwordsMatch(pwd: string, confirm_pwd: string) : boolean
-{
-    return pwd === confirm_pwd;
-}
-
-function extractFormData() : object
+function extractFormData() : any
 {
     const username: string | undefined = usernameInput?.value;
     if (!username) throw new Error("Username Undefined.");
@@ -31,43 +27,59 @@ function extractFormData() : object
     return {"username": username, "password": pwd, "confirm_password": confirm_pwd};
 }
 
-function handleSubmitError(e: Error)
+function handleSubmitError(e: any)
 {
-
+    console.error(e);
 }
 
-async function registerSubmit()
+function registerSubmit() : ValidateResult
 {
     // Validate
     let formData;
     try
     {
+        console.log("Extracting Form Data");
         formData = extractFormData();
-
+        console.log("Extracted data: ", formData);
     }
     catch (err)
     {
         console.error("Form data error: ", err);
         handleSubmitError(err);
-        return;
+        return ValidateResult.INV_FORM;
     }
 
     // Send to server
-    const response: Response = await fetch(
-        "localhost:3000/api/register",
+    const response: Promise<Response> = fetch(
+        "http://localhost:3000/api/register-user",
         {
             method: "POST",
             headers: 
             {
                 'Content-Type': 'application/json'
             },
-            body: formData
+            body: JSON.stringify(formData)
         }
-    )
-
-    if (response.status == 200)
+    );
+    response.then(data =>
     {
-        window.location.href = "localhost:3000/";
-    }
+        console.log(data);
+        handleRegisterResponse(data)
+    })
+    .catch((err) => 
+    {
+        console.log(err);
+    });
+    return ValidateResult.VALID;
 }
-//submit.addEventListener("click", registerSubmit());
+
+function handleRegisterResponse(response: Response)
+{
+    if (response.status == 201)
+    {
+        window.location.href = "http://localhost:3000/";
+        return;
+    }
+    console.error("Registration unsuccessful", response)
+}
+submit.addEventListener("click", () => registerSubmit());

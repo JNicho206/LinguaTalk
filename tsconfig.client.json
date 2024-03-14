@@ -1,12 +1,9 @@
 {
+  
     "compilerOptions": {
-      "target": "es5",
-      "module": "NodeNext",
-      "moduleResolution": "NodeNext",
       "outDir": "./public/scripts",
       "rootDir": "./client/scripts",
       "strict": true,
-      "esModuleInterop": true
     },
     "include": ["client/scripts/**/*"],
     "exclude": ["node_modules"]
