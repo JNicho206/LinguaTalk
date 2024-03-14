@@ -24,28 +24,11 @@ class MySQLDB
             port: 3306,
             connectionLimit: 10
         });
-        // this.connection = mysql.createConnection({
-        //     host: MYSQL_HOST, 
-        //     user: MYSQL_USER,
-        //     password: MYSQL_PWD,
-        //     database: "main",
-        //     port: 3306,
-        // });
     }
 
     query(q: string) : Promise<any>
     {
-        // try
-        // {
-        //     const connection = await this.pool.getConnection();
-        //     const [rows, fields] = await connection.query(q);
-        //     connection.release();
-        //     return [rows, fields];
-        // }
-        // catch (err)
-        // {
-        //     console.error(err);
-        // }  
+  
         return new Promise((resolve, reject) =>
         {
             this.pool.getConnection(async (err: Error, connection: any) => {
@@ -61,7 +44,7 @@ class MySQLDB
                     {
                         console.error("Query Error: ", err.stack);
                         connection.release();
-                        reject (new Error("Error making query"));
+                        reject(new Error("Error making query"));
                         return;
                     }
                     connection.release();
@@ -83,20 +66,67 @@ class MySQLDB
         }
         catch (err)
         {
-            console.error("Error creating user.", err);
+            console.error("Query error creating user:", err);
             return false;
         }
         return true;
     }
 
+    async getUser(name: string)
+    {
+        try
+        {
+            const response = await this.query(`SELECT * FROM users WHERE (username == ${name})`);
+            return response;
+        }
+        catch (err)
+        {
+            console.error("Error when getting user:", err);
+            return null;
+        }
+    }
+
     async userExists(name: string)
     {
-        return false;
+        try 
+        {
+            const res = await this.getUser(name);
+            return res != null;
+        }
+        catch (err)
+        {
+            console.error("Error when checking if user exists:", err);
+            return true;
+        }
     }
 
     async listUsers()
     {
-        return await this.query("SELECT * FROM users");
+        try
+        {
+            return await this.query("SELECT * FROM users");
+        }
+        catch (err)
+        {
+            console.error("Error when listing users:", err);
+        }
+    }
+
+    async authenticateUser(username: string, password: string) : Promise<boolean | null>
+    {
+        try
+        {
+            
+            const user = await this.getUser(username);
+            if (user == null) return false;
+            const hash = await bcrypt.hash(10);
+            return (hash === user.password);
+        }
+        catch (err)
+        {
+            console.error("Error authenticating user:", err);
+            return null;
+        }
     }
 }
 
@@ -117,7 +147,7 @@ class MyDynamoClient
         this.client = new DynamoDBClient(client_config)
     }
 
-    async putTerm(item: object)
+    putTerm(item: object)
     {
         const config: object = {
             "TableName": DYNAMODB_TERMS,
