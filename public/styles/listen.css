@@ -159,3 +159,8 @@
     border-bottom: 1px dotted black;
     margin-bottom: 0;
 }
+
+.invalid
+{
+    border: 1px solid red;
+}

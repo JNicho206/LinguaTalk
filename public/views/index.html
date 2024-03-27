@@ -67,16 +67,18 @@
                 </div> 
                 <div id="listen-body-bottom">
                     <div id="vocab-div">
-                        <input id="vocab-term-input" placeholder="Enter Vocab Word or Phrase">
-                        <select id="vocab-familiarity-select">
-                            <option selected=true>Familiarity</option>
-                            <option>First Encounter</option>
-                            <option>Vaguely Familiar</option>
-                            <option>Familiar</option>
-                            <option>Confident</option>
-                            <option>Concrete</option>
-                        </select>
-                        <button id="vocab-term-save">Save Term</button>
+                        <form id="vocabForm">
+                            <input type="text" id="vocab-term-input" placeholder="Enter Vocab Word or Phrase" required>
+                            <select id="vocab-familiarity-select" required>
+                                <option value="" selected=true disabled="true">Familiarity</option>
+                                <option value="1">First Encounter</option>
+                                <option value="2">Vaguely Familiar</option>
+                                <option value="3">Familiar</option>
+                                <option value="4">Confident</option>
+                                <option value="5">Concrete</option>
+                            </select>
+                            <button type="submit" id="vocab-term-save" display="hidden">Save Term</button>
+                        </form>
                     </div>
                 </div>
             </div>
