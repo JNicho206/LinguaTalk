@@ -1,6 +1,51 @@
 // Write JavaScript here
+const HOST = "localhost:3000";
 const vid_list = document.getElementById("video-list-body");
 const yt_embed_path = "https://www.youtube.com/embed/";
+
+const save_term_btn = document.getElementById("vocab-term-save") as HTMLButtonElement;
+const save_term_input = document.getElementById("vocab-term-input") as HTMLInputElement;
+const save_term_fam = document.getElementById("vocab-familiarity-select") as HTMLSelectElement;
+
+save_term_btn.addEventListener("click", (event: Event) =>
+{
+    const term = save_term_input.value.trim();
+    const familiarity = save_term_fam.value;
+    if (term === '' || familiarity === '')
+    {
+        event.preventDefault()
+        save_term_input.classList.add("invalid");
+        save_term_fam.classList.add("invalid");
+        return;
+    }
+    const termInfo = {term: term, familiarity: familiarity};
+    const response = fetch(
+        `${HOST}/api/save-vocab`,
+        {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json"
+            },
+            body: JSON.stringify(termInfo)
+        }
+    )
+    response.then((data: Response) =>
+    {
+        if (data.status === 200)
+        {
+            clearTermForm();
+        }
+        else if (data.status === 500)
+        {
+            console.log("Server error saving term.");
+            alert("Server Error saving vocab term.");
+        }
+    })
+    .catch((err: Error) =>
+    {
+        console.error("Error on sending vocab term: ", err)
+    });
+});
 
 function thumbnail_path(id: string)
 {
@@ -52,4 +97,16 @@ function createVidEntry(id: string, title: string, channel: string)
     entry.appendChild(info);
     return entry;
     
+}
+
+function resetFormItem(element: HTMLInputElement | HTMLSelectElement)
+{
+    element.classList.remove("invalid");
+    element.value = '';
+}
+
+function clearTermForm()
+{
+    resetFormItem(save_term_fam);
+    resetFormItem(save_term_input);
 }
