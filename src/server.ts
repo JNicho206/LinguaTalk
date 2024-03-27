@@ -144,10 +144,22 @@ app.post("/api/translate", async (req: Request, res: Response) =>
 // Save vocab term endpoint
 app.post("/api/save-vocab", async (req: Request, res: Response) =>
 {
+    console.log(req.body)
     const term = req.body.term;
     const familiarity = req.body.familiarity;
-    console.log(req.body)
-    const familiarity_n = 1;
+
+    if (false) // Invalid term
+    {
+        res.status(400).json({issue: "term", message: "Term is invalid."})
+        return;
+    }
+    if (false) // Invalid familiarity
+    {
+        res.status(400).json({issue: "familiarity", message: "familiarity is invalid"});
+        return;
+    }
+
+    
     const item = 
     {
         "userid": 
@@ -159,7 +171,7 @@ app.post("/api/save-vocab", async (req: Request, res: Response) =>
             "M":
             {
                 "value": {S: String(term)},
-                "familiarity": {N: String(familiarity_n)}
+                "familiarity": {N: String(familiarity)}
             }
         }
     }

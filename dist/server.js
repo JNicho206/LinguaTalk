@@ -56,8 +56,23 @@ app.get('/login', (req, res) => {
     // redirect to home
 });
 // login endpoint
-app.post('/api/login', (req, res) => {
-});
+app.post('/api/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const body = req.body;
+    const name = body.username;
+    const password = body.password;
+    // Check for blank user and passwords
+    // Authenticate user
+    const authed = yield sql.authenticateUser(name, password);
+    if (authed == null) {
+        // Error
+    }
+    else if (authed == false) {
+        // User DNE
+    }
+    session.userid = 1;
+    session.authenticated = true;
+    res.status(200).send("Login Successful.");
+}));
 // Serve register page
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, '../public', 'views', 'register.html'));
@@ -75,27 +90,34 @@ app.post('/api/register-user', express.json(), (req, res) => __awaiter(void 0, v
         res.status(500).send(validationResult);
         return;
     }
-    // Check if user exists
-    // if (sql.userExists(username))
-    // {
-    //     console.log(username, "Already exists.");
-    //     res.status(500).send("Username already exists.");
-    //     return;
-    // }
-    // const table = await sql.query("SHOW TABLES");
-    // console.log(table);
-    // Create user
+    // Username may already be registered
+    if (sql.userExists(username)) {
+        console.log(username, "Already exists.");
+        res.status(500).send("Username already exists.");
+        return;
+    }
     const created = yield sql.createUser(username, password);
     if (!created) {
         res.status(501).send("Server error creating user.");
         return;
     }
     console.log("User List:", yield sql.listUsers());
+    session.authenticated = true;
+    session.userid = 1;
     res.status(201).send("User created.");
     //res.status(200).send("Success");
 }));
-app.get('/api/sql-list', (req, res) => {
-});
+app.post("/api/translate", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = req.body.data;
+    try {
+        const translated = yield translator.translate(data);
+        res.status(200).send(translated);
+    }
+    catch (err) {
+        console.error("Error translating data:", err);
+        res.status(500).send("Server error.");
+    }
+}));
 // Save vocab term endpoint
 app.post("/api/save-vocab", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const term = req.body.term;
