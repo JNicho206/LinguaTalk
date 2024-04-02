@@ -193,3 +193,18 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+app.get("/api/list-vocab", async (req: Request, res: Response) =>
+{
+    try
+    {
+        const results = await dynamo.listTerms();
+        console.log(results);
+        res.status(200).send(results);
+    }
+    catch (err)
+    {
+        console.error("Error listing terms in db: ", err);
+        res.status(500).send("Error occurred when listing terms.");
+    }
+});
