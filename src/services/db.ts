@@ -1,5 +1,5 @@
 const mysql = require("mysql");
-const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, PutItemCommand, ScanCommand} = require('@aws-sdk/client-dynamodb');
 const bcrypt = require("bcrypt");
 
 const MYSQL_HOST = process.env["MYSQL-HOST"];
@@ -135,6 +135,7 @@ class MySQLDB
 class MyDynamoClient
 {
     client: typeof DynamoDBClient;
+    vocabSortKey: string = "LEVEL#ORIGIN#LASTSEEN";
     constructor()
     {
         const client_config: object = { 
@@ -155,6 +156,15 @@ class MyDynamoClient
         };
         const cmd: typeof PutItemCommand = new PutItemCommand(config);
         console.log("Sending");
+        return this.client.send(cmd);
+    }
+
+    listTerms(userid: string = "0")
+    {
+        const config: object = {
+            "TableName": DYNAMODB_TERMS, 
+        };
+        const cmd: typeof ScanCommand = new ScanCommand(config);
         return this.client.send(cmd);
     }
 }
