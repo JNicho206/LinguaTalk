@@ -17,6 +17,7 @@ const AWS_SECRET_KEY = process.env["AWS-SERVICE-SECRET-KEY"];
 
 class MySQLDB {
   pool: any;
+  vocabTable: string = "vocab";
   constructor() {
     this.pool = mysql.createPool({
       host: MYSQL_HOST,
@@ -55,11 +56,53 @@ class MySQLDB {
 
   async saveTerm(userid: number = 0, term: string, definition: string, familiarity: number) {
     try {
+        term.trim();
+        definition.trim();
+
         const columns = "term, definition, user_id, familiarity";
         const values = `${term}, ${definition}, ${userid}, ${familiarity}`;
         const res = await this.query(`INSERT INTO vocab (${columns}) VALUES (${values})`);
-    } catch (error) {}
+    } catch (error) 
+    {
+      console.error("Error occurred when term was being saved: ", error);
+    }
   }
+
+  async listTerms(userid: number | number[] | null = null, familiarity: number | number[] | null = null)
+  {
+    let query: string = `SELECT * FROM ${this.vocabTable}`;
+    let conditions: string[] = [];
+
+    if (userid !== null) {
+      if (Array.isArray(userid)) {
+        conditions.push(`userid IN (${userid.join(', ')})`);
+      } else {
+        conditions.push(`userid = ${userid}`);
+      }
+    }
+
+    if (familiarity !== null) {
+      if (Array.isArray(familiarity)) {
+        conditions.push(`familiarity IN (${familiarity.join(', ')})`);
+      } else {
+        conditions.push(`familiarity = ${familiarity}`);
+      }
+    }
+
+  // If there are any conditions, append them to the query
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  try {
+    const response = await this.query(query);
+    return "All good."
+  } catch (error) {
+    console.error("Error sending list terms query: ",  error);
+  }
+
+  return;
+}
 
   async createUser(name: string, password: string) {
     try {
