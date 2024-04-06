@@ -15,7 +15,7 @@ const DYNAMODB_TERMS = process.env["DYNAMODB-TERMS-TABLE"];
 const AWS_ACCESS_KEY = process.env["AWS-SERVICE-ACCESS-KEY"];
 const AWS_SECRET_KEY = process.env["AWS-SERVICE-SECRET-KEY"];
 
-class MySQLDB {
+export class MySQLDB {
   pool: any;
   vocabTable: string = "vocab";
   constructor() {
@@ -54,28 +54,39 @@ class MySQLDB {
     });
   }
 
-  async saveTerm(userid: number = 0, term: string, definition: string, familiarity: number) {
+  async saveTerm(
+    term: string,
+    definition: string,
+    familiarity: number,
+    userid: number = 0
+  ) {
     try {
-        term.trim();
-        definition.trim();
+      term.trim();
+      definition.trim();
 
-        const columns = "term, definition, user_id, familiarity";
-        const values = `${term}, ${definition}, ${userid}, ${familiarity}`;
-        const res = await this.query(`INSERT INTO vocab (${columns}) VALUES (${values})`);
-    } catch (error) 
-    {
+      const columns = "term, definition, user_id, familiarity";
+      const values = `${term}, ${definition}, ${userid}, ${familiarity}`;
+      const res = await this.query(
+        `INSERT INTO vocab (${columns}) VALUES (${values})`
+      );
+    } catch (error: any) {
       console.error("Error occurred when term was being saved: ", error);
+      throw Error(error);
     }
   }
 
-  async listTerms(userid: number | number[] | null = null, familiarity: number | number[] | null = null)
-  {
+  async listTerms(
+    term: string | string[] | null = null,
+    definition: string | string[] | null = null,
+    userid: number | number[] | null = null,
+    familiarity: number | number[] | null = null
+  ) {
     let query: string = `SELECT * FROM ${this.vocabTable}`;
     let conditions: string[] = [];
 
     if (userid !== null) {
       if (Array.isArray(userid)) {
-        conditions.push(`userid IN (${userid.join(', ')})`);
+        conditions.push(`userid IN (${userid.join(", ")})`);
       } else {
         conditions.push(`userid = ${userid}`);
       }
@@ -83,26 +94,41 @@ class MySQLDB {
 
     if (familiarity !== null) {
       if (Array.isArray(familiarity)) {
-        conditions.push(`familiarity IN (${familiarity.join(', ')})`);
+        conditions.push(`familiarity IN (${familiarity.join(", ")})`);
       } else {
         conditions.push(`familiarity = ${familiarity}`);
       }
     }
 
-  // If there are any conditions, append them to the query
-  if (conditions.length > 0) {
-    query += ' WHERE ' + conditions.join(' AND ');
-  }
+    if (term !== null) {
+      if (Array.isArray(term)) {
+        conditions.push(`term IN (${term.join(", ")})`);
+      } else {
+        conditions.push(`term = ${term}`);
+      }
+    }
 
-  try {
-    const response = await this.query(query);
-    return "All good."
-  } catch (error) {
-    console.error("Error sending list terms query: ",  error);
-  }
+    if (definition !== null) {
+      if (Array.isArray(definition)) {
+        conditions.push(`definition IN (${definition.join(", ")})`);
+      } else {
+        conditions.push(`definition = ${definition}`);
+      }
+    }
 
-  return;
-}
+    // If there are any conditions, append them to the query
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    try {
+      const response = await this.query(query);
+      return response;
+    } catch (error: any) {
+      console.error("Error sending list terms query: ", error);
+      throw Error(error);
+    }
+  }
 
   async createUser(name: string, password: string) {
     try {
@@ -163,7 +189,7 @@ class MySQLDB {
   }
 }
 
-class MyDynamoClient {
+export class MyDynamoClient {
   client: typeof DynamoDBClient;
   vocabSortKey: string = "LEVEL#ORIGIN#LASTSEEN";
   constructor() {
@@ -196,4 +222,3 @@ class MyDynamoClient {
   }
 }
 
-module.exports = { MySQLDB, MyDynamoClient };
