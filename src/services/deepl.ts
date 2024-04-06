@@ -2,7 +2,14 @@ import {Translator, TargetLanguageCode, SourceLanguageCode, TextResult} from 'de
 
 const KEY: string | undefined = process.env["DEEPL-KEY"];
 
-class DLTranslator
+export interface TranslateConfig
+{
+    texts: string | string[],
+    source_lang?: SourceLanguageCode | null,
+    target_lang?: TargetLanguageCode
+};
+
+export class DLTranslator
 {
     lang: TargetLanguageCode;
     client: Translator;
@@ -17,10 +24,13 @@ class DLTranslator
         this.client = new Translator(KEY);
     }
 
-    async translate(texts: string | string[], source_lang: SourceLanguageCode | null = null, target_lang: TargetLanguageCode = this.lang) : Promise<TextResult | TextResult[]>
+    async translate({texts, source_lang = null, target_lang = "en-US"}: TranslateConfig) : Promise<TextResult | TextResult[]>
     {
-        return this.client.translateText(texts, source_lang, target_lang);
+        try {
+            return this.client.translateText(texts, source_lang, target_lang);
+        } catch (error: any) {
+            console.error("Error when translating: ", error);
+            throw Error(error);
+        }
     }
 };
-
-module.exports = {DLTranslator};
