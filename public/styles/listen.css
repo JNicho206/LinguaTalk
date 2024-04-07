@@ -164,3 +164,19 @@
 {
     border: 1px solid red;
 }
+
+.container-header
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content:center;
+    gap: 10px;
+
+}
+
+#video-refresh-button
+{
+    height: 25px;
+    width: 50px;
+}
