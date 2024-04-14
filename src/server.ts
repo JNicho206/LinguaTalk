@@ -181,3 +181,15 @@ app.get("/api/list-vocab", async (req: Request, res: Response) => {
     res.status(500).send("Error occurred when listing terms.");
   }
 });
+
+app.get("/api/get-youtube-videos", async (req: Request, res: Response) =>
+{
+  try {
+    const result = yt.search("How to spanish podcast");
+    const videos = (await result)?.videos;
+    res.status(200).send(videos);
+  } catch (error) {
+    console.error("Error searching youtube videos.", error);
+    res.status(500).send("Error searching youtube videos."); 
+  }
+});

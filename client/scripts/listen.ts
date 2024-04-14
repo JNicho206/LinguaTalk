@@ -1,11 +1,48 @@
 // Write JavaScript here
-const HOST = "localhost:3000";
-const vid_list = document.getElementById("video-list-body");
+const HOST = "127.0.0.1:3000/";
+const vid_list = document.getElementById("video-list-body") as HTMLDivElement;
+const list_observer = new MutationObserver(handleVidListChange);
+list_observer.observe(vid_list, {childList: true, subtree: true});
+const current_vid = document.getElementById("video-frame") as HTMLIFrameElement;
 const yt_embed_path = "https://www.youtube.com/embed/";
 
 const save_term_btn = document.getElementById("vocab-term-save") as HTMLButtonElement;
 const save_term_input = document.getElementById("vocab-term-input") as HTMLInputElement;
 const save_term_fam = document.getElementById("vocab-familiarity-select") as HTMLSelectElement;
+
+const refresh_btn = document.getElementById("video-refresh-button");
+
+save_term_input.addEventListener("change", () =>
+{
+    if (save_term_input.value === "")
+    {
+        save_term_btn.disabled = true;
+    }
+    else if (save_term_fam.value === "")
+    {
+        save_term_btn.disabled = true;
+    }
+    else
+    {
+        save_term_btn.disabled = false;
+    }
+});
+
+save_term_fam.addEventListener("change", () =>
+{
+    if (save_term_fam.value === "")
+    {
+        save_term_btn.disabled = true;
+    }
+    else if (save_term_input.value === "")
+    {
+        save_term_btn.disabled = true;
+    }
+    else
+    {
+        save_term_btn.disabled = false;
+    }
+});
 
 save_term_btn.addEventListener("click", (event: Event) =>
 {
@@ -73,6 +110,17 @@ function clearList(list: HTMLDivElement)
 //     });
 // })
 
+function loadVideo(id: string)
+{
+    current_vid.src = yt_embed_path + id;
+}
+
+refresh_btn?.addEventListener("click", () =>
+{
+    clearList(vid_list);
+    populateVidList();
+});
+
 function createVidEntry(id: string, title: string, channel: string)
 {
     const entry = document.createElement("div");
@@ -95,6 +143,13 @@ function createVidEntry(id: string, title: string, channel: string)
     info.appendChild(vidChannel);
 
     entry.appendChild(info);
+
+    entry.addEventListener("click", () =>
+    {
+        loadVideo(id);
+        vid_list?.removeChild(entry);
+    });
+
     return entry;
     
 }
@@ -109,4 +164,49 @@ function clearTermForm()
 {
     resetFormItem(save_term_fam);
     resetFormItem(save_term_input);
+}
+
+function handleVidListChange()
+{
+    
+}
+
+function populateVidList(num_entires: number = 5)
+{
+    const response = get_yt_videos(num_entires);
+    response.then( content =>
+    {
+        if (!content.ok)
+        {
+            throw new Error("Error populating video list.");
+        }
+        return content.json()
+    })
+    .then( data =>
+    {
+        for (const video of data)
+        {
+            vid_list.appendChild(createVidEntry(video.id, video.title, video.channel));
+        }  
+    })
+    .catch( err =>
+    {
+        console.error(err);
+    });
+    
+}
+
+function get_yt_videos(n: number = 10, channel: string = "How To Spanish")
+{
+    const config = {
+        count: n,
+        channel: channel
+    };
+
+    return fetch(
+        "/api/get-youtube-videos",
+        {
+            method: "GET",
+        }
+    )
 }

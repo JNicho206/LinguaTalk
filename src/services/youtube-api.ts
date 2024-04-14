@@ -1,12 +1,29 @@
+import { stringify } from "querystring";
+
 const axios = require('axios');
 
 
-const API_KEY = process.env["YOUTUBE-API-KEY"];
+const API_KEY = process.env["YOUTUBE-API-KEY"] as string;
 
-
-class SearchResult
+export class Video
 {
-  videos: Array<any>;
+  id: string;
+  title: string;
+  channel: string;
+  publishDate: string;
+
+  constructor(data: any)
+  {
+    this.id = data.id.videoId;
+    this.title = data.snippet.title;
+    this.channel = data.snippet.channelTitle;
+    this.publishDate = data.snippet.publishedAt;
+  }
+};
+
+export class SearchResult
+{
+  videos: Array<Video>;
 
   constructor(data: any)
   {
@@ -16,7 +33,9 @@ class SearchResult
     {
       if (itemIsVideo(item))
       {
-        this.videos.push(item);
+        console.log(item);
+        const v = new Video(item);
+        this.videos.push(v);
       }
     }
   }
@@ -26,46 +45,44 @@ class SearchResult
     let ids = [];
     for (const v of this.videos)
     {
-      ids.push(v.id.videoId);
+      ids.push(v.id);
     }
   }
 }
 
-async function search(query: string, maxResults: number = 10, api_key: string | undefined = API_KEY)
+export async function search(query: string, maxResults: number = 10, api_key: string = API_KEY)
 {
-  let data = '';
-  const endpoint = 'https://www.googleapis.com/youtube/v3/search?part=snippet';
-
-  let config = {
-    method: 'get',
-    maxBodyLength: Infinity,
-    url: endpoint,
-    headers: { 
-      key: api_key
-    },
-    data: data,
-    params: {
-      part: "snippet",
-      q: query,
-      maxResults: maxResults
-    }
-  };
-
-  try
-  {
-    let result = await axios.request(config);
-    return new SearchResult(result.data);
-  } catch (error)
-  {
-    console.error("Error hitting YouTube API search endpoint.", error);
-    throw error;
+  const endpoint = 'https://www.googleapis.com/youtube/v3/search?';
+  const params = {
+    part: "snippet",
+    q: query,
+    maxResults: String(maxResults),
+    key: api_key
   }
- 
+  const query_params = new URLSearchParams(params).toString();
+  
+  const url = `${endpoint}${query_params}`;
+  const result = await fetch(url, {
+    method: "GET"
+  });
+
+  return new SearchResult(await result.json());
+  // var requestOptions = {
+  //   method: 'GET',
+  //   redirect: 'follow'
+  // };
+  
+  // const res = await fetch("https://www.googleapis.com/youtube/v3/search?part=snippet&q=How to Spanish&maxResults=10&key=AIzaSyBoJNf05Ek50vzdCtckhRu5nPGmzoJu-TY", {
+  //   method: 'GET'
+  // })
+  //   .then(response => response.json())
+  //   .then(result => new SearchResult(result))
+  //   .catch(error => console.log('error', error));
+  
+  // return res;
 }
 
-function itemIsVideo(item: any)
+export function itemIsVideo(item: any)
 {
   return item.id.kind == "youtube#video";
 }
-
-module.exports = {search};

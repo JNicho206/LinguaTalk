@@ -65,6 +65,13 @@
     border-left: 1px solid black;
 }
 
+#video-info-div
+{
+    height: 100%;
+    width: 150px;
+    border-right: 2px solid black;
+}
+
 #vocab-div
 {
     display: flex;
@@ -73,6 +80,11 @@
     align-items: center;
     height: 100%;
     width: 100%;
+    gap: 25px;
+}
+
+#vocabForm
+{
     gap: 25px;
 }
 
@@ -87,6 +99,11 @@
 {
     height: 25px;
     width: 125px
+}
+
+#vocab-term-save
+{
+    height: 25px;
 }
 
 .youtube-frame 
