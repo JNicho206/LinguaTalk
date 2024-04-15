@@ -185,7 +185,8 @@ app.get("/api/list-vocab", async (req: Request, res: Response) => {
 app.get("/api/get-youtube-videos", async (req: Request, res: Response) =>
 {
   try {
-    const result = yt.search("How to spanish podcast");
+    const n_to_get: number = Number(req.query.n); 
+    const result = yt.search("How to spanish podcast", n_to_get);
     const videos = (await result)?.videos;
     res.status(200).send(videos);
   } catch (error) {

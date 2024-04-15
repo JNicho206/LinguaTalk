@@ -28,12 +28,10 @@ export class SearchResult
   constructor(data: any)
   {
     this.videos = [];
-
     for (const item of data.items)
     {
       if (itemIsVideo(item))
       {
-        console.log(item);
         const v = new Video(item);
         this.videos.push(v);
       }
@@ -67,19 +65,6 @@ export async function search(query: string, maxResults: number = 10, api_key: st
   });
 
   return new SearchResult(await result.json());
-  // var requestOptions = {
-  //   method: 'GET',
-  //   redirect: 'follow'
-  // };
-  
-  // const res = await fetch("https://www.googleapis.com/youtube/v3/search?part=snippet&q=How to Spanish&maxResults=10&key=AIzaSyBoJNf05Ek50vzdCtckhRu5nPGmzoJu-TY", {
-  //   method: 'GET'
-  // })
-  //   .then(response => response.json())
-  //   .then(result => new SearchResult(result))
-  //   .catch(error => console.log('error', error));
-  
-  // return res;
 }
 
 export function itemIsVideo(item: any)

@@ -1,4 +1,12 @@
-// Write JavaScript here
+interface Video
+{
+    id: string,
+    title: string,
+    channel: string
+};
+
+var video_pool: Array<Video> = [];
+
 const HOST = "127.0.0.1:3000/";
 const vid_list = document.getElementById("video-list-body") as HTMLDivElement;
 const list_observer = new MutationObserver(handleVidListChange);
@@ -124,22 +132,26 @@ refresh_btn?.addEventListener("click", () =>
 function createVidEntry(id: string, title: string, channel: string)
 {
     const entry = document.createElement("div");
+    entry.title = title;
     entry.classList.add("video-entry");
+    const img_div = document.createElement("div");
+    img_div.classList.add("thumbnail-div");
+    entry.appendChild(img_div);
     const img = document.createElement("img");
     img.src = thumbnail_path(id);
-    img.classList.add("video-entry-thumbnail");
-    entry.appendChild(img);
+    img.classList.add("thumbnail");
+    img_div.appendChild(img);
 
     const info = document.createElement("div");
     info.classList.add("video-entry-info");
     const vidTitle = document.createElement("p");
-    vidTitle.classList.add("video-entry-title");
+    vidTitle.classList.add("entry-title");
     vidTitle.textContent = title;
 
     info.appendChild(vidTitle);
     const vidChannel = document.createElement("p");
     vidChannel.textContent = channel;
-    vidChannel.classList.add("video-entry-channel");
+    vidChannel.classList.add("entry-channel");
     info.appendChild(vidChannel);
 
     entry.appendChild(info);
@@ -148,6 +160,12 @@ function createVidEntry(id: string, title: string, channel: string)
     {
         loadVideo(id);
         vid_list?.removeChild(entry);
+        const v = video_pool.pop();
+        if (v)
+        {
+            const new_entry = createVidEntry(v.id, v.title, v.channel);
+            vid_list.appendChild(new_entry);
+        }
     });
 
     return entry;
@@ -171,29 +189,21 @@ function handleVidListChange()
     
 }
 
-function populateVidList(num_entires: number = 5)
+function populateVidList(num_entries: number = 5)
 {
-    const response = get_yt_videos(num_entires);
-    response.then( content =>
+    // Ensure Pool is populated
+    if (video_pool.length < num_entries) 
     {
-        if (!content.ok)
-        {
-            throw new Error("Error populating video list.");
-        }
-        return content.json()
-    })
-    .then( data =>
+        populateVideoPool();
+    }
+
+    for (let i = 0; i < num_entries; i++)
     {
-        for (const video of data)
-        {
-            vid_list.appendChild(createVidEntry(video.id, video.title, video.channel));
-        }  
-    })
-    .catch( err =>
-    {
-        console.error(err);
-    });
-    
+        const v = video_pool.pop() as Video;
+        console.log(v);
+        const entry = createVidEntry(v.id, v.title, v.channel);
+        vid_list.appendChild(entry);
+    }
 }
 
 function get_yt_videos(n: number = 10, channel: string = "How To Spanish")
@@ -204,9 +214,38 @@ function get_yt_videos(n: number = 10, channel: string = "How To Spanish")
     };
 
     return fetch(
-        "/api/get-youtube-videos",
+        `/api/get-youtube-videos?n=${n}`,
         {
             method: "GET",
         }
     )
 }
+
+function populateVideoPool(init: boolean = false)
+{
+    const result = get_yt_videos(100);
+    result.then( content =>
+    {
+        if (!content.ok)
+        {
+            throw new Error("Error populating video pool.");
+        }
+        return content.json()
+    })
+    .then( data =>
+    {
+        for (const v of data)
+        {
+            video_pool.push(v);
+        }
+        if (init) populateVidList();
+    })
+    .catch( err =>
+    {
+        console.error(err);
+    });
+    console.log(video_pool);
+}
+
+
+populateVideoPool(true);
