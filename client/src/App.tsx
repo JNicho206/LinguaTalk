@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ReviewPage from './pages/ReviewPage';
+import ListenPage from './pages/ListenPage';
 
 
 const App: React.FC = () => {
@@ -9,6 +10,7 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/review" Component={ReviewPage} />
+        <Route path="/listen" Component={ListenPage} />
       </Routes>
     </Router>
   );

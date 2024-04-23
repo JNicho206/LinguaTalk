@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "build:client": "tsc -p tsconfig.client.json",
+    "build:client": "cd ../client && npm run build",
     "build": "tsc && npm run build:client",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build && node dist/server",
@@ -17,6 +17,7 @@
     "@aws-sdk/client-dynamodb": "^3.521.0",
     "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
     "deepl-node": "^1.12.0",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",

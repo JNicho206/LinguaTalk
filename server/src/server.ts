@@ -1,5 +1,6 @@
 const dotenv = require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const session = require("express-session");
 const app = express();
 import { Request, Response } from "express";
@@ -19,7 +20,8 @@ const sql = new db.MySQLDB();
 const translator = new deepl.DLTranslator("es");
 
 //Middleware
-app.use(express.static(join_path(__dirname, "../public")));
+app.use(cors());
+app.use(express.static(join_path(__dirname, "../dist/client")));
 app.use(express.json());
 app.use(
   session({
@@ -35,24 +37,6 @@ app.use(
     name: "sessionId",
   })
 );
-
-// Endpoints
-
-// Serve home page
-// TODO protect by sending to login if not authenticated
-app.get("/", (req: Request, res: Response) => {
-  res.sendFile(join_path(__dirname, "../public", "views", "index.html"));
-});
-
-// Serve login page
-app.get("/login", (req: Request, res: Response) => {
-  // If not authenticated
-  // serve login
-  res.sendFile(join_path(__dirname, "../public", "views", "index.html"));
-
-  // else
-  // redirect to home
-});
 
 // login endpoint
 app.post("/api/login", async (req: Request, res: Response) => {
@@ -72,11 +56,6 @@ app.post("/api/login", async (req: Request, res: Response) => {
   session.userid = 1;
   session.authenticated = true;
   res.status(200).send("Login Successful.");
-});
-
-// Serve register page
-app.get("/register", (req: Request, res: Response) => {
-  res.sendFile(join_path(__dirname, "../public", "views", "register.html"));
 });
 
 app.post(
@@ -166,12 +145,6 @@ app.post("/api/save-vocab", async (req: Request, res: Response) => {
   }
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 app.get("/api/list-vocab", async (req: Request, res: Response) => {
   try {
     const results = await sql.listTerms();
@@ -193,4 +166,10 @@ app.get("/api/get-youtube-videos", async (req: Request, res: Response) =>
     console.error("Error searching youtube videos.", error);
     res.status(500).send("Error searching youtube videos."); 
   }
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
