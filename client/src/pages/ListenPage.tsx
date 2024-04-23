@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { VideoSidebar, VideoInfo } from "../components/VideoSidebar";
 
 function idToUrl(id: string)
 {
   return `https://www.youtube.com/embed/${id}`;
+}
+
+async function getVideos()
+{
+  const response = await fetch(`http://127.0.0.1:3000/api/get-youtube-videos?n=100`);
+  if (!response.ok) throw new Error("Error getting youtube videos.");
+  const videos = await response.json();
+  return videos;
 }
 
 interface TermData
@@ -56,12 +64,78 @@ const TermForm: React.FC<TermFormProps> = ({data, onTermChange, onFamiliarityCha
 };
 
 const ListenPage: React.FC = () => {
-  
+  const nSidebarVideos: number = 5;
+  const poolMin: number = 10;
   const [formData, setFormData] = useState<TermData>({term: "", familiarity: 1});
+  const [videoPool, setVideoPool] = useState<VideoInfo[]>([]);
   const [currentVideo, setCurrentVideo] = useState<VideoInfo | null>(null);
   const [sidebarVideos, setSidebarVideos] = useState<VideoInfo[]>([]);
   const [sidebarState, setSidebarState] = useState("videos");
   const [listState, setListState] = useState("empty");
+
+  
+
+  // On first render
+  useEffect(() => {
+    //Populate the video pool
+    const setCurrentVideoAndSidebarVideos = (videos: VideoInfo[]) => {
+      if (videos && videos.length > 0) {
+        const updatedVideos = [...videos];
+        const current = updatedVideos.pop() as VideoInfo;  // Remove the last video for current
+        setCurrentVideo(current);
+        setVideoPool(updatedVideos);          // Update video pool after removing the current video
+        setSidebarVideos(updatedVideos.slice(0, 5));  // Set the sidebar videos
+        setListState("populated");
+      }
+    };
+
+    const setup = async () => {
+      try {
+        const videos = await getVideos();
+        setVideoPool(videos);
+    
+        setCurrentVideoAndSidebarVideos(videos);
+      } catch (error) {
+        console.error("Error fetching videos:", error);
+        setListState("error");
+      }
+    }
+    setup();
+  }, []);
+
+  useEffect(() => { 
+    const handleChange = async () =>
+    {
+      if (videoPool.length < poolMin)
+      {
+        try {
+          const videos = await getVideos();
+          const ids = videoPool.map(v => v.id);
+          setVideoPool((prevPool: VideoInfo[]) => [...prevPool, ...videos.filter((v: VideoInfo) => !(ids.includes(v.id)))])
+        } catch (error) {
+          console.error("Error getting videos: ", error);
+        }
+          if (videoPool.length < nSidebarVideos)
+          {
+            setListState("error");
+            return;
+          }
+      }
+      if (sidebarVideos.length < nSidebarVideos && videoPool.length > 0) {
+        // Calculate how many more videos are needed to fill the sidebar.
+        const neededVideos = nSidebarVideos - sidebarVideos.length;
+        const newVideos = videoPool.slice(-neededVideos);  // Take the last 'neededVideos' from videoPool
+        const remainingVideos = videoPool.slice(0, -neededVideos); // Remaining videos after taking out what's needed
+    
+        // Update the state atomically without looping
+        setVideoPool(remainingVideos);
+        setSidebarVideos((prevSidebarVideos) => [...prevSidebarVideos, ...newVideos]);
+      }
+      setListState("populated");
+    }
+
+    handleChange();
+  }, [sidebarVideos, videoPool]);
 
   const handleTermChange = (event: any) => {
     setFormData({
@@ -99,7 +173,7 @@ const ListenPage: React.FC = () => {
   };
 
   const handleSidebarVideoClick = (clicked: any) => {
-    setSidebarVideos(prevVideos => prevVideos.filter(video => video.id !== clicked.id));
+    setSidebarVideos(sidebarVideos => sidebarVideos.filter(video => video.id !== clicked.id));
     setCurrentVideo(clicked);
   };
 
@@ -108,29 +182,7 @@ const ListenPage: React.FC = () => {
     setSidebarState("videos");
     setSidebarVideos([])
     setListState("refreshing");
-    fetch("http://127.0.0.1:3000/api/get-youtube-videos?n=5", {
-      method: "GET"
-    })
-    .then((response: Response) => {
-      if (!response.ok)
-      {
-        throw new Error("Error getting youtube videos")
-      }
-      return response.json()
-    })
-    .then(newVideos => {
-      console.log(newVideos);
-      setSidebarVideos(newVideos);
-      console.log(sidebarVideos);
-      setListState("populated");
-    })
-    .catch((error: Error) =>
-    {
-      console.error(error);
-      setListState("error");
-    });
-  }
-
+  };
   return (
     <>
       <title>Practice Listening</title>
