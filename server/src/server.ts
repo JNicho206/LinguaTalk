@@ -120,35 +120,130 @@ app.post("/api/translate", async (req: Request, res: Response) => {
 
 // Save vocab term endpoint
 app.post("/api/save-vocab", async (req: Request, res: Response) => {
-  console.log(req.body);
-  const term = req.body.term;
-  const familiarity = req.body.familiarity;
-  const definition = req.body.definition;
 
-  if (false) {
-    // Invalid term
-    res.status(400).json({ issue: "term", message: "Term is invalid." });
+  if (!req.body){
+    res.status(400).send("Bad Request. No body.");
+  }
+
+  let term = req.body.term;
+  let familiarity = req.body.familiarity;
+  let translation = req.body.translation;
+  let origin = "youtube";
+
+  
+
+  let missing: string[] = [];
+  if (!term) missing.push("term");
+  else if (!familiarity) missing.push("familiarity");
+  else if (!translation) missing.push("translation");
+  else if (!origin) missing.push("origin");
+  if (missing.length !== 0)
+  {
+    res.status(400).json({
+      error: "Bad Request.",
+      specifics: {
+        issue: "items",
+        message: `Missing items ${missing}`
+      }
+    });
+
     return;
   }
-  if (false) {
-    // Invalid familiarity
-    res
-      .status(400)
-      .json({ issue: "familiarity", message: "familiarity is invalid" });
+
+  // Term validation
+  if (typeof term !== "string") {
+    res.status(400).json({
+      error: "Bad Request.", 
+      specifics: {
+        issue: "term", 
+        message: "Term must be a string." 
+      }
+    });
     return;
+  }
+  
+  // Familiarity Validation
+  if (typeof familiarity !== "number") {
+
+    if (typeof familiarity !== "string") {
+      res.status(400).json({
+        error: "Bad Request.", 
+        specifics: {
+          issue: "familiarity", 
+          message: "Familiarity must be a number or stringified number." 
+        }
+      });
+      return;
+    }
+    else {
+      // Convert to string if possible, else return error message.
+      try {
+        familiarity = String(familiarity);
+      } catch (error) {
+        res.status(400).json({
+          error: "Bad Request",
+          specifics: {
+            issue: "familiarity",
+            message: "Familiarity is a non-numerical string."
+          }
+        });
+        return;
+      }
+    }
+  }
+  
+  // Translation Validation
+  if (typeof translation !== "string") {
+    res.status(400).json({
+      error: "Bad Request.", 
+      specifics: {
+        issue: "translation", 
+        message: "Translation must be a string." 
+      }
+    });
+    return;
+  }
+
+  // Check if term already exists
+  const getResult = await dynamo.getTerm(0, term);
+  if (getResult.item)
+  {
+    if (getResult.item.translation.S === translation)
+    {
+      res.status(200).send("Term already exists with given translation.");
+    }
+  }
+
+  const date: Date = new Date();
+  const item = {
+    "userid": {"S": "0"}, //Primary Key
+    "TERM#": {"S": term}, //Sort Key
+    "familiarity": {"N": familiarity},
+    "translations": {"L": [
+      {"S": translation}
+    ]},
+    "origin": {"S": origin},
+    "last seen": {"S": date.toISOString()}
   }
 
   try {
-    const response = sql.saveTerm(term, definition, familiarity);
+    const result = await dynamo.putTerm(item);
+    if (result.$metadata.httpStatusCode !== 200)
+    {
+      console.log(result);
+      throw new Error("Error saving term in DynamoDB");
+    }
+    res.status(200).send("Term Saved");
   } catch (error: any) {
+    console.error(error);
     res.status(500).send("Server Error.");
   }
 });
 
 app.get("/api/list-vocab", async (req: Request, res: Response) => {
   try {
-    const results = await sql.listTerms();
-    console.log(results[0].term);
+    const results = await dynamo.listTerms();
+    console.log(results);
     res.status(200).send(results);
   } catch (err) {
     res.status(500).send("Error occurred when listing terms.");
@@ -168,8 +263,10 @@ app.get("/api/get-youtube-videos", async (req: Request, res: Response) =>
   }
 });
 
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+

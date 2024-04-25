@@ -2,6 +2,7 @@ const mysql = require("mysql");
 const {
   DynamoDBClient,
   PutItemCommand,
+  GetItemCommand,
   ScanCommand,
 } = require("@aws-sdk/client-dynamodb");
 const bcrypt = require("bcrypt");
@@ -210,6 +211,27 @@ export class MyDynamoClient {
     };
     const cmd: typeof PutItemCommand = new PutItemCommand(config);
     console.log("Sending");
+    return this.client.send(cmd);
+  }
+
+  getTerm(userid: string | number, term: string)
+  {
+    if (typeof userid === "number")
+    {
+      userid = String(userid);
+    }
+
+    const item: object = {
+      "userid": {"S": userid},
+      "TERM#": {"S": term}
+    };
+
+    const config: object = {
+      TableName: DYNAMODB_TERMS,
+      Key: item
+    };
+
+    const cmd: typeof GetItemCommand = new GetItemCommand(config);
     return this.client.send(cmd);
   }
 
