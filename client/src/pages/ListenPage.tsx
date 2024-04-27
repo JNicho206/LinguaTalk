@@ -31,19 +31,20 @@ interface TermFormProps
 const TermForm: React.FC<TermFormProps> = ({data, onTermChange, onFamiliarityChange, onSubmit}) => {
 
   return (
-    <div className="flex justify-center items-center h-full w-full gap-5">
-      <form className="flex" onSubmit={onSubmit}>
+    <div className="flex justify-center items-center h-full w-full flex-grow">
+      <form className="flex w-full justify-center gap-4 items-center" onSubmit={onSubmit}>
         <input
           type="text"
-          className="block border-0 rounded-md text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 h-25px w-300px"
+          value={data.term || ''}
+          className="border-0 rounded-md text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 h-10 w-[300px]"
           placeholder="Enter Vocab Word or Phrase"
           required
           onChange={onTermChange}
         />
         {data.term && (
-          <select id="vocab-familiarity-select" required onChange={onFamiliarityChange}
-            className="block h-25px w-125px rounded-md ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600">
-            <option value={0} selected={true} disabled={true}>
+          <select defaultValue={0} id="vocab-familiarity-select" required onChange={onFamiliarityChange}
+            className="block h-10 w-max rounded-md ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 mx-1.5">
+            <option value={0} disabled={true}>
               Familiarity
             </option>
             <option value={1}>First Encounter</option>
@@ -53,9 +54,9 @@ const TermForm: React.FC<TermFormProps> = ({data, onTermChange, onFamiliarityCha
             <option value={5}>Concrete</option>
           </select>
         )}
-        {data.term && data.familiarity && (
-          <button type="submit" id="vocab-term-save" disabled={true} className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-            Save Term
+        {data.term && data.familiarity !== 0 && (
+          <button type="submit" className="flex items-center px-4 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-indigo-600 rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring focus:ring-indigo-300 focus:ring-opacity-80">
+            <span className="mx-1">Save Term</span>
           </button>
         )}
       </form>
@@ -66,7 +67,7 @@ const TermForm: React.FC<TermFormProps> = ({data, onTermChange, onFamiliarityCha
 const ListenPage: React.FC = () => {
   const nSidebarVideos: number = 5;
   const poolMin: number = 10;
-  const [formData, setFormData] = useState<TermData>({term: "", familiarity: 1});
+  const [formData, setFormData] = useState<TermData>({term: "", familiarity: 0});
   const [videoPool, setVideoPool] = useState<VideoInfo[]>([]);
   const [currentVideo, setCurrentVideo] = useState<VideoInfo | null>(null);
   const [sidebarVideos, setSidebarVideos] = useState<VideoInfo[]>([]);
@@ -138,24 +139,32 @@ const ListenPage: React.FC = () => {
   }, [sidebarVideos, videoPool]);
 
   const handleTermChange = (event: any) => {
-    setFormData({
-      ...formData,
+    if (event.target.value === "")
+    {
+      setFormData({term: "", familiarity: 0});
+      return;
+    }
+    setFormData((prevData) => ({
+      ...prevData,
       term: event.target.value
-    });
+    }));
   };
 
   const handleFamiliarityChange = (event: any) => {
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       familiarity: event.target.value
-    })
+    }))
   };
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
-    fetch("/save-term", {
+    fetch("http://127.0.0.1:3000/api/save-vocab", {
       method: "POST",
-      body: JSON.stringify(formData)
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({...formData, translation: "How are you?"})
     })
     .then((response: Response) =>
     {
@@ -186,7 +195,7 @@ const ListenPage: React.FC = () => {
   return (
     <>
       <title>Practice Listening</title>
-      <div className="w-[1700px] h-[900px] m-24 flex flex-col bg-teal-600 rounded-lg">
+      <div className="w-[1700px] h-[900px] m-24 flex flex-col bg-gray-600 rounded-lg">
         <div id="head" className="flex justify-center items-center h-1/6 w-full">
           <h1 className="text-4xl font-bold text-black">Practice Listening!</h1>
         </div>
@@ -202,7 +211,7 @@ const ListenPage: React.FC = () => {
               <VideoSidebar videos={sidebarVideos} listState={listState} sidebarState={sidebarState} onRefresh={handleRefresh} onVideoClick={handleSidebarVideoClick} />
             </div>
           </div>
-          <div className="flex w-full h-[50px]">
+          <div className="flex w-full flex-grow">
             <TermForm data={formData} onTermChange={handleTermChange} onFamiliarityChange={handleFamiliarityChange} onSubmit={handleSubmit}/>
           </div>
         </div>

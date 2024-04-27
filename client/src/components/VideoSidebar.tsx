@@ -53,7 +53,7 @@ export const VideoSidebar: React.FC<VideoSidebarProps> = ({videos, sidebarState,
       {sidebarState === "transcript" && <div id="transcript-div"></div>}
       {sidebarState === "videos" &&
         <div id="video-list" className="h-full w-full flex flex-col overflow-auto">
-          <div className="bg-white h-1/6 w-full flex justify-center items-center">
+          <div className="h-1/6 w-full flex justify-center items-center">
             <h3 className="px-4 font-bold text-xl">Other Videos</h3>
             <button className="flex items-center px-4 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-indigo-600 rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring focus:ring-indigo-300 focus:ring-opacity-80"
                     onClick={onRefresh}>

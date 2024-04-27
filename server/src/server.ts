@@ -125,6 +125,7 @@ app.post("/api/save-vocab", async (req: Request, res: Response) => {
     res.status(400).send("Bad Request. No body.");
   }
 
+  console.log(req);
   let term = req.body.term;
   let familiarity = req.body.familiarity;
   let translation = req.body.translation;
@@ -262,8 +263,6 @@ app.get("/api/get-youtube-videos", async (req: Request, res: Response) =>
     res.status(500).send("Error searching youtube videos."); 
   }
 });
-
-
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
