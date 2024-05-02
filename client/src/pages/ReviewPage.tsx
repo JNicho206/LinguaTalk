@@ -1,64 +1,71 @@
 import React, { useState } from 'react';
+import TopicCard from '../components/TopicCard';
+
+
+interface Topic {
+  header: string,
+  body: string,
+  link?: string
+}
+
+interface Topics {
+  [key: string]: Topic
+}
 
 const ReviewPage: React.FC = () => {
-  // State to manage the current term and its familiarity level
-  const [term, setTerm] = useState('');
-  const [familiarity, setFamiliarity] = useState('');
+  const [reviewState, setReviewState] = useState("");
 
-  // Function to handle term input change
-  const handleTermChange = (event: any) => {
-    setTerm(event.target.value);
+  const handleTopicClick = (event: any) =>
+  {
+    const topic = event.target.key;
+    setReviewState(topic);
   };
 
-  // Function to handle familiarity select change
-  const handleFamiliarityChange = (event: any) => {
-    setFamiliarity(event.target.value);
-  };
-
-  // Function to handle term review submission
-  const handleSubmit = (event: any) => {
-    event.preventDefault();
-    // You can perform any action here, such as sending the review data to the server
-    console.log(`Review submitted: Term - ${term}, Familiarity - ${familiarity}`);
-    // Clear the form after submission
-    setTerm('');
-    setFamiliarity('');
-  };
+  const topics: Topics = {
+    "common-words": {
+      header: "Review Common Words",
+      body: "Review and practice the 2000 most common spanish words.",
+      link: "http://frequencylists.blogspot.com/2015/12/the-2000-most-frequently-used-spanish.html"
+    },
+    "common-verbs": {
+      header: "Review Common Verbs",
+      body: "Review and practice the 200 most common verbs and their conjugations.",
+      link: ""
+    },
+    "saved-terms": {
+      header: "Personalized Review",
+      body: "Review and practice the terms you've saved from your learning sessions.",
+      link: ""
+    }
+  }
 
   return (
-    <div>
-      <h2>Term Review</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="term">Term:</label>
-          <input
-            type="text"
-            id="term"
-            value={term}
-            onChange={handleTermChange}
-            placeholder="Enter Term"
-            required
-          />
+    <div className="flex justify-center items-center h-full w-full">
+      {reviewState === "" && (
+        <div id="reviewTopics" className="flex h-auto w-full justify-center items-center gap-4">
+          {Object.keys(topics).map((topic: string) => (
+            <TopicCard key={topic} header={topics[topic].header} body={topics[topic].body} link={topics[topic].link} onClick={handleTopicClick}/>
+          ))}
         </div>
-        <div>
-          <label htmlFor="familiarity">Familiarity:</label>
-          <select
-            id="familiarity"
-            value={familiarity}
-            onChange={handleFamiliarityChange}
-            required
-          >
-            <option value="">Select Familiarity Level</option>
-            <option value="1">First Encounter</option>
-            <option value="2">Vaguely Familiar</option>
-            <option value="3">Familiar</option>
-            <option value="4">Confident</option>
-            <option value="5">Concrete</option>
-          </select>
+      )}
+      {reviewState !== "" && (
+        <div className="w-[1700px] h-[900px] m-24 flex flex-col bg-gray-600 rounded-lg">
+          <div id="head" className="flex justify-center items-center h-1/6 w-full">
+              <h1 className="text-4xl font-bold text-black">{topics[reviewState].header}</h1>
+          </div>
+          <div>
+            <div id="term" className="flex w-full h-full ">
+
+            </div>
+            <div id="divider" className="h-full w-1 bg-black"/>
+            <div id="translation">
+
+            </div>
+          </div>
         </div>
-        <button type="submit">Submit Review</button>
-      </form>
+      )}
     </div>
+
   );
 };
 

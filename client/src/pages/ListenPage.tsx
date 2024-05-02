@@ -195,7 +195,7 @@ const ListenPage: React.FC = () => {
   return (
     <>
       <title>Practice Listening</title>
-      <div className="w-[1700px] h-[900px] m-24 flex flex-col bg-gray-600 rounded-lg">
+      <div className="w-full h-full flex flex-col bg-gray-600">
         <div id="head" className="flex justify-center items-center h-1/6 w-full">
           <h1 className="text-4xl font-bold text-black">Practice Listening!</h1>
         </div>

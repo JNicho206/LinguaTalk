@@ -23,12 +23,12 @@ const VideoEntry: React.FC<VideoEntryProps> = ({ video, onClick }) =>
 {
 
   return (
-    <div className="w-full h-[100px] flex" title={video.channel + ":\n" + video.title} onClick={onClick}>
-      <div className="flex h-full w-3/8">
+    <div className="w-full h-[150px] flex" title={video.channel + ":\n" + video.title} onClick={onClick}>
+      <div className="flex h-full w-1/2">
         <img className="w-full h-full" src={imgUrl(video.id)}/>
       </div>
-      <div className="flex flex-col w-1/2 h-full py-2 px-1 items-center flex-grow">
-        <p className="text-ellipsis overflow-hidden whitespace-normal flex-grow text-xs font-extrabold text-white">{video.title}</p>
+      <div className="flex flex-col w-1/2 h-full pt-4 pb-2 px-1 items-center flex-grow place-content-around">
+        <p className="text-center text-ellipsis overflow-hidden whitespace-normal flex-grow text-xs font-extrabold text-white">{video.title}</p>
         {/* <div className="w-full h-[2px] bg-white"></div> */}
         <p className="overflow-hidden whitespace-normal flex-grow text-xs text-white">{video.channel}</p>
       </div>
